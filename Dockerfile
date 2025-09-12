@@ -14,7 +14,7 @@ RUN dotnet restore "AuthAPI/AuthAPI.csproj"
 
 # Copy source còn lại và build
 WORKDIR "/src/AuthAPI"
-COPY ImageAPI/ .
+COPY AuthAPI/ .
 RUN dotnet build "AuthAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish
