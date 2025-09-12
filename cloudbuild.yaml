@@ -1,0 +1,112 @@
+timeout: 1800s
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+
+substitutions:
+  _REGION: asia-southeast1              # Region cho Artifact Registry
+  _REPO: app-image-thumbnail-auth         # Tên repository trong Artifact Registry
+  _IMAGE: image-thumbnail-auth           # Tên image
+  _SCAN_SEVERITY: HIGH,CRITICAL         # Fail build nếu có các mức này
+  _ARTIFACTS_BUCKET: "${PROJECT_ID}-cloudbuild-artifact"  # GCS bucket lưu báo cáo scan
+
+steps:
+  # 1) Build image từ Dockerfile trong thư mục ImageAPI (dùng BuildKit cho nhanh)
+  - name: gcr.io/cloud-builders/docker
+    id: Build image
+    env:
+      - DOCKER_BUILDKIT=1
+    args:
+      - build
+      - -f
+      - Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}:${SHORT_SHA}
+      - .
+
+  # 2) Push image tag theo commit SHA lên Artifact Registry
+  - name: gcr.io/cloud-builders/docker
+    id: Push SHA tag
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}:${SHORT_SHA}
+      
+   # # 2.5) Tạo thư mục cho báo cáo Trivy
+  # - name: gcr.io/cloud-builders/gcloud
+    # id: Prepare Trivy output dir
+    # entrypoint: bash
+    # args:
+      # - -lc
+      # - mkdir -p /workspace/trivy
+
+  # # 3) Quét lỗ hổng với Trivy; fail nếu có HIGH/CRITICAL
+  # - name: aquasec/trivy:0.54.1
+    # id: Vulnerability scan (fail on HIGH/CRITICAL)
+    # args:
+      # - image
+      # - --ignore-unfixed
+      # - --exit-code
+      # - "1"
+      # - --severity
+      # - ${_SCAN_SEVERITY}
+      # - --format
+      # - sarif
+      # - --output
+      # - /workspace/trivy/report.sarif
+      # - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}:${SHORT_SHA}
+
+  # # 4) (Không fail) Xuất tóm tắt dạng text
+  # - name: aquasec/trivy:0.54.1
+    # id: Vulnerability summary (text)
+    # args:
+      # - image
+      # - --ignore-unfixed
+      # - --exit-code
+      # - "0"
+      # - --severity
+      # - LOW,MEDIUM,HIGH,CRITICAL
+      # - --format
+      # - table
+      # - --output
+      # - /workspace/trivy/summary.txt
+      # - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}:${SHORT_SHA}
+
+  # 5) Nếu scan pass, gắn tag 'latest' và push
+  - name: gcr.io/cloud-builders/docker
+    id: Tag latest
+    args:
+      - tag
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}:${SHORT_SHA}
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}:latest
+
+  - name: gcr.io/cloud-builders/docker
+    id: Push latest
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}:latest
+
+# artifacts:
+  # objects:
+    # location: gs://${_ARTIFACTS_BUCKET}/image-thumbnail-api/${SHORT_SHA}
+    # paths:
+      # - trivy/report.sarif
+      # - trivy/summary.txt
+      
+      # Step 6: Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'Deploy'
+    entrypoint: gcloud
+    args: [
+      'run',
+      'deploy',
+      '${_SERVICE_NAME}', # Tên service Cloud Run của bạn
+      '--image',
+      '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}:${SHORT_SHA}',
+      '--region',
+      '${_REGION}',
+      '--platform',
+      'managed' # Hoặc 'gke' nếu bạn dùng Cloud Run for Anthos
+      # Thêm các cờ khác nếu cần, ví dụ:
+      # '--allow-unauthenticated',
+      # '--set-env-vars', 'KEY=VALUE'
+    ]
