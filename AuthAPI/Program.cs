@@ -55,6 +55,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGet("/health", () => "OK");
 ApplyMigrations();
 app.Run();
 
