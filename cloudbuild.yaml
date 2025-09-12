@@ -105,8 +105,8 @@ steps:
       '--region',
       '${_REGION}',
       '--platform',
-      'managed' # Hoặc 'gke' nếu bạn dùng Cloud Run for Anthos
+      'managed', # Hoặc 'gke' nếu bạn dùng Cloud Run for Anthos
       # Thêm các cờ khác nếu cần, ví dụ:
-      '--allow-unauthenticated',
+      '--allow-unauthenticated'
       # '--set-env-vars', 'KEY=VALUE'
     ]
