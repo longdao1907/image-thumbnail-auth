@@ -22,7 +22,7 @@ SecretManagerServiceClient client = await SecretManagerServiceClient.CreateAsync
 SecretVersionName secretVersionName = new(projectId, secretId, secretVersion);
 AccessSecretVersionResponse result = await client.AccessSecretVersionAsync(secretVersionName);
 string certContent = result.Payload.Data.ToStringUtf8();
-
+    
 string tempCertPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.crt");
 await File.WriteAllTextAsync(tempCertPath, certContent);
 

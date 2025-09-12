@@ -66,6 +66,25 @@
           }
         }
       }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "AuthAPI"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
