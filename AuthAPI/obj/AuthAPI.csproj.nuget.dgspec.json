@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\letin\\OneDrive\\Documents\\ImageThumbnail\\ImgThumbnailApp\\AuthAPI\\AuthAPI.csproj": {}
+    "C:\\Users\\letin\\OneDrive\\Documents\\image-thumbnail-auth\\AuthAPI\\AuthAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\letin\\OneDrive\\Documents\\ImageThumbnail\\ImgThumbnailApp\\AuthAPI\\AuthAPI.csproj": {
+    "C:\\Users\\letin\\OneDrive\\Documents\\image-thumbnail-auth\\AuthAPI\\AuthAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\letin\\OneDrive\\Documents\\ImageThumbnail\\ImgThumbnailApp\\AuthAPI\\AuthAPI.csproj",
+        "projectUniqueName": "C:\\Users\\letin\\OneDrive\\Documents\\image-thumbnail-auth\\AuthAPI\\AuthAPI.csproj",
         "projectName": "AuthAPI",
-        "projectPath": "C:\\Users\\letin\\OneDrive\\Documents\\ImageThumbnail\\ImgThumbnailApp\\AuthAPI\\AuthAPI.csproj",
+        "projectPath": "C:\\Users\\letin\\OneDrive\\Documents\\image-thumbnail-auth\\AuthAPI\\AuthAPI.csproj",
         "packagesPath": "C:\\Users\\letin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\letin\\OneDrive\\Documents\\ImageThumbnail\\ImgThumbnailApp\\AuthAPI\\obj\\",
+        "outputPath": "C:\\Users\\letin\\OneDrive\\Documents\\image-thumbnail-auth\\AuthAPI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -57,6 +57,10 @@
             "BCrypt.Net-Core": {
               "target": "Package",
               "version": "[1.6.0, )"
+            },
+            "Google.Cloud.SecretManager.V1": {
+              "target": "Package",
+              "version": "[2.6.0, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",

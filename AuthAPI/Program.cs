@@ -4,13 +4,27 @@ using AuthAPI.Core.Application.Options;
 using AuthAPI.Core.Application.Services;
 using AuthAPI.Core.Domain.Entities;
 using AuthAPI.Infrastructure.Persistence;
-
+using Google.Cloud.SecretManager.V1;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Add services to the container.
+// Configure EF Core with PostgreSQL
+string projectId = builder.Configuration.GetSection("Gcp").GetValue<string>("ProjectID") ?? throw new ArgumentNullException("Gcp Project ID not configured.");
+string secretId = builder.Configuration.GetSection("Gcp").GetValue<string>("SecretID") ?? throw new ArgumentNullException("Gcp Secret ID not configured.");
+string secretVersion = builder.Configuration.GetSection("Gcp").GetValue<string>("SecretVersion") ?? throw new ArgumentNullException("Gcp Secret Version not configured.");
+
+//Init Secret Manager Client
+SecretManagerServiceClient client = await SecretManagerServiceClient.CreateAsync();
+
+//get the secret value for database connection
+SecretVersionName secretVersionName = new(projectId, secretId, secretVersion);
+AccessSecretVersionResponse result = await client.AccessSecretVersionAsync(secretVersionName);
+string certContent = result.Payload.Data.ToStringUtf8();
+
+string tempCertPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.crt");
+await File.WriteAllTextAsync(tempCertPath, certContent);
 
 // Configure EF Core with SQL Server
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
@@ -32,11 +46,9 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // 2. Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

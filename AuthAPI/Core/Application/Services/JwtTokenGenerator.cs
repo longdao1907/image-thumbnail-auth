@@ -1,6 +1,7 @@
 ﻿using AuthAPI.Core.Application.Interfaces;
 using AuthAPI.Core.Application.Options;
 using AuthAPI.Core.Domain.Entities;
+using Google.Cloud.SecretManager.V1;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -13,15 +14,30 @@ namespace AuthAPI.Core.Application.Services
     {
 
         private readonly JwtOptions _jwtOptions;
-        public JwtTokenGenerator(IOptions<JwtOptions> jwtOptions)
+        private readonly IConfiguration _configuration;
+        public JwtTokenGenerator(IOptions<JwtOptions> jwtOptions, IConfiguration configuration)
         {
             _jwtOptions = jwtOptions.Value;
+            _configuration = configuration;
         }
 
         public string GenerateToken(ApplicationUser applicationUser)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
+            //Get secret from GCP Secret Manager
+            string projectId = _configuration.GetSection("Gcp").GetValue<string>("ProjectID") ?? throw new ArgumentNullException("Gcp Project ID not configured.");
+            string jwtSecret = _configuration.GetSection("Gcp").GetValue<string>("JWTSecretKey") ?? throw new ArgumentNullException("Gcp JWTSecretKey not configured.");
+            string secretVersion = _configuration.GetSection("Gcp").GetValue<string>("SecretVersion") ?? throw new ArgumentNullException("Gcp Secret Version not configured.");
 
+            //Init Secret Manager Client
+            SecretManagerServiceClient client = SecretManagerServiceClient.Create();
+
+            //get the secret value for JWT creation
+            SecretVersionName secretVersionName = new(projectId, jwtSecret, secretVersion);
+            AccessSecretVersionResponse result = client.AccessSecretVersion(secretVersionName);
+            _jwtOptions.Secret = result.Payload.Data.ToStringUtf8();
+
+
+            var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_jwtOptions.Secret);
 
             var claimList = new List<Claim>

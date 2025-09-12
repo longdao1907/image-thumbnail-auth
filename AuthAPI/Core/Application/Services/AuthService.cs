@@ -86,7 +86,7 @@ namespace AuthAPI.Core.Application.Services
             }
             catch (Exception ex)
             {
-
+                throw ex;
             }
             return "Error Encountered";
 
