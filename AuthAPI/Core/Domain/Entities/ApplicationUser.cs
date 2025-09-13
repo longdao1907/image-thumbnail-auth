@@ -7,6 +7,6 @@ namespace AuthAPI.Core.Domain.Entities
     /// </summary>
     public class ApplicationUser : IdentityUser
     {
-        public string Name { get; set; }
-        }
+        public string Name { get; set; } = string.Empty;
+    }
 }

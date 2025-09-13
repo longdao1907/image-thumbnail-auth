@@ -23,32 +23,34 @@ namespace AuthAPI.Core.Application.Services
         }
         public async Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto)
         {
-            var user = _db.ApplicationUsers.FirstOrDefault(u => u.UserName.ToLower() == loginRequestDto.Username.ToLower());
+            var user = _db.ApplicationUsers.FirstOrDefault(u => u.UserName == loginRequestDto.Username);
 
-            bool isValid = await _userManager.CheckPasswordAsync(user, loginRequestDto.Password);
-
-            if (user == null || isValid == false)
+            if (user != null)
             {
-                return new LoginResponseDto() { User = null, Token = "" };
+                bool isValid = await _userManager.CheckPasswordAsync(user, loginRequestDto.Password);
+                if (isValid)
+                {
+                    //if user was found , Generate JWT Token
+                    var token = _jwtTokenGenerator.GenerateToken(user);
+
+                    UserDto userDTO = new()
+                    {
+                        Email = user.Email ?? "",
+                        Id = user.Id,
+                        Name = user.Name
+                    };
+
+                    LoginResponseDto loginResponseDto = new LoginResponseDto()
+                    {
+                        User = userDTO,
+                        Token = token
+                    };
+
+                    return loginResponseDto;
+                }
             }
 
-            //if user was found , Generate JWT Token
-            var token = _jwtTokenGenerator.GenerateToken(user);
-
-            UserDto userDTO = new()
-            {
-                Email = user.Email,
-                Id = user.Id,
-                Name = user.Name
-            };
-
-            LoginResponseDto loginResponseDto = new LoginResponseDto()
-            {
-                User = userDTO,
-                Token = token
-            };
-
-            return loginResponseDto;
+            return new LoginResponseDto();
         }
 
         public async Task<string> Register(RegistrationRequestDto registrationRequestDto)
@@ -70,7 +72,7 @@ namespace AuthAPI.Core.Application.Services
 
                     UserDto userDto = new()
                     {
-                        Email = userToReturn.Email,
+                        Email = userToReturn.Email ?? "",
                         Id = userToReturn.Id,
                         Name = userToReturn.Name,
                     };
@@ -80,15 +82,14 @@ namespace AuthAPI.Core.Application.Services
                 }
                 else
                 {
-                    return result.Errors.FirstOrDefault().Description;
+                    return result.Errors.FirstOrDefault()?.Description ?? "An unknown error occurred.";
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
-            return "Error Encountered";
 
         }
     }

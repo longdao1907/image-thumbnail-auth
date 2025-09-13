@@ -374,7 +374,6 @@ C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\obj\Debug\net8.0\
 C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\obj\Debug\net8.0\AuthAPI.csproj.Up2Date
 C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\obj\Debug\net8.0\AuthAPI.dll
 C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\obj\Debug\net8.0\refint\AuthAPI.dll
