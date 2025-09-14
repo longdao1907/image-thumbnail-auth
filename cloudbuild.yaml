@@ -9,6 +9,7 @@ substitutions:
   _IMAGE: image-thumbnail-auth           # Tên image
   _SCAN_SEVERITY: HIGH,CRITICAL         # Fail build nếu có các mức này
   _ARTIFACTS_BUCKET: "${PROJECT_ID}-cloudbuild-artifact"  # GCS bucket lưu báo cáo scan
+  _SERVICE_NAME: image-thumbnail-auth
 
 steps:
   # 1) Build image từ Dockerfile trong thư mục ImageAPI (dùng BuildKit cho nhanh)
@@ -30,7 +31,7 @@ steps:
     args:
       - push
       - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_IMAGE}:${SHORT_SHA}
-      
+
    # # 2.5) Tạo thư mục cho báo cáo Trivy
   # - name: gcr.io/cloud-builders/gcloud
     # id: Prepare Trivy output dir
@@ -91,7 +92,7 @@ steps:
     # paths:
       # - trivy/report.sarif
       # - trivy/summary.txt
-      
+
       # Step 6: Deploy container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy'
