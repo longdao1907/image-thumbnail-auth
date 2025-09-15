@@ -6,5 +6,6 @@ namespace AuthAPI.Core.Application.Interfaces
     {
         Task<string> Register(RegistrationRequestDto registrationRequestDto);
         Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto);
+        Task<string> GenerateServiceToken(string clientId, string clientSecret);
     }
 }

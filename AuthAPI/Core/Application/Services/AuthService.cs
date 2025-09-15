@@ -21,6 +21,12 @@ namespace AuthAPI.Core.Application.Services
             _userManager = userManager;
             _roleManager = roleManager;
         }
+
+        public Task<string> GenerateServiceToken(string clientId, string clientSecret)
+        {
+            return Task.FromResult(_jwtTokenGenerator.GenerateServiceToken(clientId, clientSecret));
+        }
+
         public async Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto)
         {
             var user = _db.ApplicationUsers.FirstOrDefault(u => u.UserName == loginRequestDto.Username);

@@ -1,26 +1,21 @@
 ﻿using AuthAPI.Core.Application.DTOs;
 using AuthAPI.Core.Application.Interfaces;
-using Azure;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+
 
 namespace AuthAPI.Controllers
 {
     [ApiController]
     [Route("api/Auth")]
-    public class AuthController: ControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private ResponseDto _response;
 
-        private readonly IConfiguration _configuration;
-        protected ResponseDto _response;
-
-        public AuthController(IAuthService authService,  IConfiguration configuration)
+        public AuthController(IAuthService authService, IConfiguration configuration)
         {
             _authService = authService;
-            _configuration = configuration;
-          
-            _response = new();
+            _response = new ResponseDto();
         }
 
 
@@ -49,6 +44,15 @@ namespace AuthAPI.Controllers
             }
             _response.Result = loginResponse;
             return Ok(_response);
+        }
+
+        [HttpPost("service-token")]
+        public async Task<ResponseDto> GenerateServiceToken(ServiceTokenRequestDto request)
+        {
+
+            var token = await _authService.GenerateServiceToken(request.ClientId, request.ClientSecret);
+            _response.Result = token;
+            return _response; // This now returns a ResponseDto from an async Task<ResponseDto> method, which is correct.
         }
     }
 }
