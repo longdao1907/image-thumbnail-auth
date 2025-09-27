@@ -84,7 +84,7 @@ spec:
   selector:
     app: image-thumbnail-auth
   # Tạo một Load Balancer bên ngoài để có thể truy cập từ Internet
-  type: LoadBalancer
+  type: ClusterIP
   # Cấu hình cổng
   ports:
   - protocol: TCP
