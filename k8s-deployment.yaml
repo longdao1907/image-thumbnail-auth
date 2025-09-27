@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: img-thumbnail
+  annotations:
+    iam.gke.io/gcp-service-account: imgthumb-app-signer@durable-sky-471008-q2.iam.gserviceaccount.com
+  name: auth-api-ksa
+
+
+
+---
+
+# API Version cho Deployment
+apiVersion: apps/v1
+# Loại đối tượng là Deployment
+kind: Deployment
+metadata:
+  namespace: img-thumbnail
+  # Tên của Deployment, lấy từ _SERVICE_NAME
+  name: image-thumbnail-auth-deployment
+  labels:
+    app: image-thumbnail-auth
+spec:
+  # Số lượng bản sao (pod) mong muốn
+  replicas: 1
+  # Selector để Deployment biết cần quản lý những Pod nào
+  selector:
+    matchLabels:
+      app: image-thumbnail-auth
+  # Template định nghĩa cấu trúc của mỗi Pod
+  template:
+    metadata:
+      # Gán nhãn cho các Pod được tạo ra
+      labels:
+        app: image-thumbnail-auth
+    spec:
+      serviceAccountName: auth-api-ksa
+      containers:
+      - name: image-thumbnail-auth-container
+        # === PHẦN QUAN TRỌNG NHẤT ===
+        # Đây là đường dẫn đầy đủ đến image của bạn trong Artifact Registry.
+        # Bạn cần thay thế YOUR_PROJECT_ID và YOUR_TAG cho đúng.
+        image: asia-southeast1-docker.pkg.dev/durable-sky-471008-q2/app-image-thumbnail-auth/image-thumbnail-auth:latest
+        # securityContext:
+          # runAsUser: 0  # UID 0 là của người dùng root
+        # command: ["/bin/sh", "-c"]
+        # args: ["trap : TERM INT; sleep infinity & wait"]
+        # Cổng mà ứng dụng của bạn lắng nghe bên trong container.
+        # LƯU Ý: Bạn PHẢI thay đổi số 8080 này cho đúng với cổng của ứng dụng.
+        ports:
+        - containerPort: 8080
+
+        # (Tùy chọn nhưng khuyến khích) Khai báo tài nguyên cho container
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m" # 0.25 core
+          limits:
+            memory: "512Mi"
+            cpu: "500m" # 0.5 core
+
+        # (Tùy chọn) Thêm các biến môi trường nếu ứng dụng cần
+        # env:
+        # - name: DATABASE_URL
+        #   value: "your-database-connection-string"
+        # - name: API_KEY
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: my-secrets
+        #       key: api-key
+
+---
+
+# API Version cho Service
+apiVersion: v1
+# Loại đối tượng là Service
+kind: Service
+metadata:
+  namespace: img-thumbnail
+  # Tên của Service
+  name: image-thumbnail-auth-service
+spec:
+  # Selector để Service biết cần gửi traffic đến những Pod nào
+  selector:
+    app: image-thumbnail-auth
+  # Tạo một Load Balancer bên ngoài để có thể truy cập từ Internet
+  type: LoadBalancer
+  # Cấu hình cổng
+  ports:
+  - protocol: TCP
+    # Cổng mà Load Balancer sẽ lắng nghe
+    port: 80
+    # Cổng trên Pod mà traffic sẽ được chuyển đến (phải khớp với containerPort ở trên)
+    targetPort: 8080

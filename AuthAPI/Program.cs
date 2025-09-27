@@ -7,35 +7,26 @@ using AuthAPI.Infrastructure.Persistence;
 using Google.Cloud.SecretManager.V1;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Dummy.SharedLib.Abstract;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure EF Core with PostgreSQL
-string projectId = builder.Configuration.GetSection("Gcp").GetValue<string>("ProjectID") ?? throw new ArgumentNullException("Gcp Project ID not configured.");
-string secretId = builder.Configuration.GetSection("Gcp").GetValue<string>("SecretID") ?? throw new ArgumentNullException("Gcp Secret ID not configured.");
-string secretVersion = builder.Configuration.GetSection("Gcp").GetValue<string>("SecretVersion") ?? throw new ArgumentNullException("Gcp Secret Version not configured.");
-
-//Init Secret Manager Client
-SecretManagerServiceClient client = await SecretManagerServiceClient.CreateAsync();
-
-//get the secret value for database connection
-SecretVersionName secretVersionName = new(projectId, secretId, secretVersion);
-AccessSecretVersionResponse result = await client.AccessSecretVersionAsync(secretVersionName);
-string certContent = result.Payload.Data.ToStringUtf8();
-    
-string tempCertPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.crt");
+var tempCertPath = GetTempPath();
+var certContent = GetCertContent();
 await File.WriteAllTextAsync(tempCertPath, certContent);
 
 // Configure EF Core with SQL Server
-builder.Services.AddDbContextFactory<AppDbContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-
 });
+
+builder.Services.AddScoped(typeof(IRepository<,>), typeof(PostgresRepository<,>));
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("ApiSettings:JwtOptions"));
 // Register interfaces and implementations for Dependency Injection
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddDefaultTokenProviders()
+    .AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -59,6 +50,28 @@ app.MapGet("/health", () => "OK");
 ApplyMigrations();
 app.Run();
 
+string GetTempPath()
+{
+    string tempCertPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.crt");
+    return tempCertPath;
+}
+
+string GetCertContent()
+{
+    // Configure EF Core with PostgreSQL
+    string projectId = builder.Configuration.GetSection("Gcp").GetValue<string>("ProjectID") ?? throw new ArgumentNullException("Gcp Project ID not configured.");
+    string secretId = builder.Configuration.GetSection("Gcp").GetValue<string>("SecretID") ?? throw new ArgumentNullException("Gcp Secret ID not configured.");
+    string secretVersion = builder.Configuration.GetSection("Gcp").GetValue<string>("SecretVersion") ?? throw new ArgumentNullException("Gcp Secret Version not configured.");
+
+    //Init Secret Manager Client
+    SecretManagerServiceClient client = SecretManagerServiceClient.Create();
+
+    //get the secret value for database connection
+    SecretVersionName secretVersionName = new(projectId, secretId, secretVersion);
+    AccessSecretVersionResponse result = client.AccessSecretVersion(secretVersionName);
+    string certContent = result.Payload.Data.ToStringUtf8();
+    return certContent;
+}
 
 void ApplyMigrations()
 {

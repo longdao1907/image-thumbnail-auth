@@ -32,4 +32,8 @@
     <Folder Include="Infrastructure\Services\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Dummy\SharedLib\SharedLib.csproj" />
+  </ItemGroup>
+
 </Project>

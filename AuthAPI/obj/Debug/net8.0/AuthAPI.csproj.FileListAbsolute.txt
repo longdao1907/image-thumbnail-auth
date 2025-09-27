@@ -380,3 +380,5 @@ C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\obj\Debug\net8.0\
 C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\obj\Debug\net8.0\AuthAPI.pdb
 C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\obj\Debug\net8.0\AuthAPI.genruntimeconfig.cache
 C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\obj\Debug\net8.0\ref\AuthAPI.dll
+C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\bin\Debug\net8.0\SharedLib.dll
+C:\Users\letin\OneDrive\Documents\image-thumbnail-auth\AuthAPI\bin\Debug\net8.0\SharedLib.pdb
